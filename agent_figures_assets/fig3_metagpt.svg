@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 330" role="img" aria-label="MetaGPT paper style diagram">
+<style>
+text{font-family:Inter,Arial,sans-serif;fill:#1f1f1d}.title{font-size:18px;font-weight:600}.small{font-size:12px;fill:#6c6b66}.tiny{font-size:11px;fill:#6c6b66}.box{fill:#fff;stroke:#1f1f1d;stroke-width:1.4}.soft{fill:#fafaf7}.dash{fill:none;stroke:#1f1f1d;stroke-width:1.4;stroke-dasharray:6 5}.arrow{fill:none;stroke:#1f1f1d;stroke-width:1.5;marker-end:url(#arr)}.arrowdash{fill:none;stroke:#1f1f1d;stroke-width:1.4;stroke-dasharray:6 5;marker-end:url(#arr)}.blue{fill:#f2f7fd;stroke:#5f8fcf}.orange{fill:#fff7ea;stroke:#ba7517}.purple{fill:#f4f3fe;stroke:#7c74d8}.green{fill:#eef8f2;stroke:#55a36a}.workspace{fill:#f7f7ff;stroke:#5574b8}.label{font-size:13px;font-weight:600}.sub{font-size:11px;fill:#555}
+</style><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1f1f1d"/></marker></defs>
+<text x="500" y="30" text-anchor="middle" class="title">MetaGPT: role-based SOP collaboration</text>
+<rect x="45" y="102" width="85" height="64" rx="8" class="box"/><text x="88" y="126" text-anchor="middle" class="label">Human</text><text x="88" y="146" text-anchor="middle" class="sub">user</text>
+<path d="M130 134 H210" class="arrow"/><text x="168" y="122" text-anchor="middle" class="tiny">assign task</text>
+<rect x="210" y="62" width="650" height="190" rx="18" class="dash"/><text x="535" y="86" text-anchor="middle" class="label">MetaGPT Framework</text>
+<rect x="240" y="116" width="92" height="54" rx="7" class="box"/><text x="286" y="137" text-anchor="middle" class="sub">Product</text><text x="286" y="154" text-anchor="middle" class="sub">Manager</text>
+<rect x="362" y="116" width="92" height="54" rx="7" class="box"/><text x="408" y="147" text-anchor="middle" class="sub">Architect</text>
+<rect x="484" y="116" width="92" height="54" rx="7" class="box"/><text x="530" y="137" text-anchor="middle" class="sub">Project</text><text x="530" y="154" text-anchor="middle" class="sub">Manager</text>
+<rect x="606" y="116" width="92" height="54" rx="7" class="box orange"/><text x="652" y="147" text-anchor="middle" class="sub">Engineer</text>
+<rect x="728" y="116" width="92" height="54" rx="7" class="box orange"/><text x="774" y="137" text-anchor="middle" class="sub">QA</text><text x="774" y="154" text-anchor="middle" class="sub">Engineer</text>
+<path d="M332 143 H362" class="arrow"/><path d="M454 143 H484" class="arrow"/><path d="M576 143 H606" class="arrow"/><path d="M698 143 H728" class="arrow"/>
+<rect x="240" y="198" width="580" height="38" rx="8" class="box workspace"/><text x="530" y="222" text-anchor="middle" class="sub">Workspace: shared files, context, messages, and knowledge</text>
+<path d="M286 170 V198" class="arrowdash"/><path d="M408 170 V198" class="arrowdash"/><path d="M530 170 V198" class="arrowdash"/><path d="M652 170 V198" class="arrowdash"/><path d="M774 170 V198" class="arrowdash"/>
+<path d="M820 143 H900" class="arrow"/><rect x="900" y="112" width="85" height="62" rx="8" class="box"/><text x="942" y="136" text-anchor="middle" class="label">Output</text><text x="942" y="154" text-anchor="middle" class="sub">deliverable</text>
+<path d="M238 275 H822" class="arrowdash"/><text x="530" y="298" text-anchor="middle" class="tiny">SOP workflow</text>
+<path d="M774 104 C774 55 652 55 652 104" class="arrowdash"/><text x="713" y="56" text-anchor="middle" class="tiny">review / revise subloop</text>
+<text x="500" y="320" text-anchor="middle" class="small">Abstracted from Hong et al. (2023)</text>
+</svg>

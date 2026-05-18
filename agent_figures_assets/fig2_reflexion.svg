@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 360" role="img" aria-label="Reflexion paper style diagram">
+<style>
+text{font-family:Inter,Arial,sans-serif;fill:#1f1f1d}.title{font-size:18px;font-weight:600}.small{font-size:12px;fill:#6c6b66}.tiny{font-size:11px;fill:#6c6b66}.box{fill:#fff;stroke:#1f1f1d;stroke-width:1.4}.soft{fill:#fafaf7}.dash{fill:none;stroke:#1f1f1d;stroke-width:1.4;stroke-dasharray:6 5}.arrow{fill:none;stroke:#1f1f1d;stroke-width:1.5;marker-end:url(#arr)}.arrowdash{fill:none;stroke:#1f1f1d;stroke-width:1.4;stroke-dasharray:6 5;marker-end:url(#arr)}.blue{fill:#f2f7fd;stroke:#5f8fcf}.orange{fill:#fff7ea;stroke:#ba7517}.purple{fill:#f4f3fe;stroke:#7c74d8}.green{fill:#eef8f2;stroke:#55a36a}.workspace{fill:#f7f7ff;stroke:#5574b8}.label{font-size:13px;font-weight:600}.sub{font-size:11px;fill:#555}
+</style><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1f1f1d"/></marker></defs>
+<text x="490" y="30" text-anchor="middle" class="title">Reflexion: actor, evaluator, reflection memory</text>
+<rect x="60" y="92" width="125" height="70" rx="8" class="box green"/><text x="122" y="121" text-anchor="middle" class="label">Actor</text><text x="122" y="142" text-anchor="middle" class="sub">LLM</text>
+<rect x="285" y="92" width="125" height="70" rx="8" class="box"/><text x="348" y="121" text-anchor="middle" class="label">Environment</text><text x="348" y="142" text-anchor="middle" class="sub">task / world</text>
+<rect x="540" y="92" width="125" height="70" rx="8" class="box orange"/><text x="603" y="121" text-anchor="middle" class="label">Evaluator</text><text x="603" y="142" text-anchor="middle" class="sub">LLM / reward</text>
+<rect x="790" y="92" width="130" height="70" rx="8" class="box purple"/><text x="855" y="121" text-anchor="middle" class="label">Reflection</text><text x="855" y="142" text-anchor="middle" class="sub">LLM</text>
+<path d="M185 112 H285" class="arrow"/><text x="235" y="103" text-anchor="middle" class="tiny">action</text>
+<path d="M285 145 H185" class="arrow"/><text x="235" y="164" text-anchor="middle" class="tiny">observation</text>
+<path d="M410 127 H540" class="arrow"/><text x="475" y="117" text-anchor="middle" class="tiny">trajectory</text>
+<path d="M665 127 H790" class="arrow"/><text x="727" y="115" text-anchor="middle" class="tiny">eval / feedback</text>
+<rect x="385" y="245" width="240" height="64" rx="10" class="box" style="fill:#fff;stroke-dasharray:6 5"/><text x="505" y="273" text-anchor="middle" class="label">Memory</text><text x="505" y="294" text-anchor="middle" class="sub">stored verbal reflections</text>
+<path d="M855 162 V245 H625" class="arrowdash"/><text x="835" y="214" text-anchor="middle" class="tiny">store</text>
+<path d="M385 277 H122 V162" class="arrowdash"/><text x="255" y="268" text-anchor="middle" class="tiny">retrieve for next trial</text>
+<path d="M855 92 V60" class="arrow"/><text x="855" y="53" text-anchor="middle" class="tiny">reflection text</text>
+<rect x="65" y="245" width="190" height="64" rx="8" fill="#fff" stroke="#1f1f1d" stroke-dasharray="6 5"/><path d="M90 265 h36" class="arrow"/><text x="155" y="269" class="tiny">action / data flow</text><path d="M90 292 h36" class="arrowdash"/><text x="155" y="296" class="tiny">store / retrieve</text>
+<text x="490" y="342" text-anchor="middle" class="small">Abstracted from Shinn et al. (2023)</text>
+</svg>

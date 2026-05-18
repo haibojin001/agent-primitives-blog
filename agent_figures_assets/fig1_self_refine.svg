@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 285" role="img" aria-label="Self-Refine paper style diagram">
+<style>
+text{font-family:Inter,Arial,sans-serif;fill:#1f1f1d}.title{font-size:18px;font-weight:600}.small{font-size:12px;fill:#6c6b66}.tiny{font-size:11px;fill:#6c6b66}.box{fill:#fff;stroke:#1f1f1d;stroke-width:1.4}.soft{fill:#fafaf7}.dash{fill:none;stroke:#1f1f1d;stroke-width:1.4;stroke-dasharray:6 5}.arrow{fill:none;stroke:#1f1f1d;stroke-width:1.5;marker-end:url(#arr)}.arrowdash{fill:none;stroke:#1f1f1d;stroke-width:1.4;stroke-dasharray:6 5;marker-end:url(#arr)}.blue{fill:#f2f7fd;stroke:#5f8fcf}.orange{fill:#fff7ea;stroke:#ba7517}.purple{fill:#f4f3fe;stroke:#7c74d8}.green{fill:#eef8f2;stroke:#55a36a}.workspace{fill:#f7f7ff;stroke:#5574b8}.label{font-size:13px;font-weight:600}.sub{font-size:11px;fill:#555}
+</style><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1f1f1d"/></marker></defs>
+<text x="450" y="30" text-anchor="middle" class="title">Self-Refine: generate, feedback, refine</text>
+<rect x="55" y="98" width="86" height="54" rx="8" class="box"/><text x="98" y="129" text-anchor="middle" class="label">Input</text>
+<path d="M141 125 H205" class="arrow"/>
+<rect x="205" y="88" width="130" height="74" rx="8" class="box blue"/><text x="270" y="117" text-anchor="middle" class="label">Generate</text><text x="270" y="139" text-anchor="middle" class="sub">initial response</text>
+<path d="M335 125 H405" class="arrow"/>
+<rect x="405" y="88" width="130" height="74" rx="8" class="box orange"/><text x="470" y="117" text-anchor="middle" class="label">Feedback</text><text x="470" y="139" text-anchor="middle" class="sub">critique</text>
+<path d="M535 125 H605" class="arrow"/>
+<rect x="605" y="88" width="130" height="74" rx="8" class="box purple"/><text x="670" y="117" text-anchor="middle" class="label">Refine</text><text x="670" y="139" text-anchor="middle" class="sub">response</text>
+<path d="M735 125 H799" class="arrow"/>
+<rect x="799" y="98" width="86" height="54" rx="8" class="box"/><text x="842" y="122" text-anchor="middle" class="label">Output</text><text x="842" y="140" text-anchor="middle" class="sub">final</text>
+<path d="M670 88 V58 H270 V88" class="arrowdash"/><text x="470" y="51" text-anchor="middle" class="tiny">repeat N times at test time</text>
+<path d="M670 162 V205 H470 V162" class="arrowdash"/><text x="570" y="224" text-anchor="middle" class="tiny">refined response becomes the next candidate</text>
+<text x="450" y="268" text-anchor="middle" class="small">Abstracted from Madaan et al. (2023)</text>
+</svg>
