@@ -3,588 +3,884 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How to Build Your Own Agent Primitives</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<title>Building Agent Primitives — Tutorial</title>
 <style>
-* { box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
+
 :root {
-  --bg: #FAFAF7;
-  --surface: #FFFFFF;
-  --surface-secondary: #F4F2EC;
-  --text-primary: #1F1F1D;
-  --text-secondary: #6C6B66;
-  --text-tertiary: #9A998F;
-  --border: #E5E3DB;
-  --border-strong: #C9C7BD;
-  --accent: #BA7517;
+  --sidebar-w: 260px;
+  --content-max: 820px;
+  --bg: #ffffff;
+  --bg-page: #f8f9fb;
+  --text: #1a1a1a;
+  --text-muted: #555;
+  --text-faint: #888;
+  --border: #dde1e7;
+  --accent: #ee4c2c;
+  --accent-bg: #fff5f3;
+  --code-bg: #1e1e2e;
+  --code-text: #cdd6f4;
+  --note-bg: #f0f7ff;
+  --note-border: #3b82f6;
+  --warn-bg: #fffbea;
+  --warn-border: #f59e0b;
+  --tip-bg: #f0fdf4;
+  --tip-border: #22c55e;
+  --sidebar-bg: #f8f9fb;
+  --sidebar-active: #ee4c2c;
+  --tag-bg: #e8f4f8;
+  --tag-text: #1a6b8a;
 }
+
 body {
-  font-family: 'Inter', -apple-system, system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text-primary);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-page);
+  color: var(--text);
   margin: 0;
+  font-size: 16px;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 760px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
-header { margin-bottom: 3rem; }
-header .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-tertiary); margin-bottom: 0.5rem; }
-h1 { font-size: 36px; font-weight: 500; line-height: 1.25; margin: 0 0 1rem; letter-spacing: -0.5px; }
-.subtitle { font-size: 18px; color: var(--text-secondary); margin: 0; font-style: italic; }
-h2 { font-size: 24px; font-weight: 500; margin: 3rem 0 1rem; letter-spacing: -0.3px; }
-h3 { font-size: 18px; font-weight: 500; margin: 2rem 0 0.75rem; }
-p { margin: 0 0 1.25rem; font-size: 16px; }
-strong { font-weight: 500; }
-em { font-style: italic; }
-a { color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
-code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; background: var(--surface-secondary); padding: 1px 6px; border-radius: 4px; color: #6B4513; }
-pre { background: #1F1F1D; color: #E5E3DB; padding: 1.25rem 1.5rem; border-radius: 10px; overflow-x: auto; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.6; margin: 0 0 1.5rem; }
-pre code { background: transparent; color: inherit; padding: 0; }
-ul, ol { margin: 0 0 1.25rem; padding-left: 1.5rem; }
-li { margin-bottom: 0.5rem; }
-blockquote { border-left: 3px solid var(--accent); padding: 0.25rem 0 0.25rem 1.25rem; margin: 1.5rem 0; color: var(--text-secondary); font-style: italic; }
-figure { margin: 2.5rem 0; }
-figcaption { text-align: center; font-size: 13px; color: var(--text-secondary); margin-top: 0.75rem; font-style: italic; }
-.paper-svg-frame { padding: 1.4rem 1rem 1.1rem; overflow: hidden; }
-.paper-svg-img { display:block; width:100%; height:auto; margin:0 auto; border-radius:10px; background:#fff; }
 
-.figure-frame { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1rem; }
-.checklist { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
-.checklist h3 { margin-top: 0; }
-.checklist ul { list-style: none; padding-left: 0; }
-.checklist li { padding-left: 1.75rem; position: relative; }
-.checklist li::before { content: ''; position: absolute; left: 0; top: 6px; width: 14px; height: 14px; border: 1.5px solid var(--border-strong); border-radius: 3px; background: var(--surface); }
-.callout { background: #FAEEDA; border-left: 3px solid var(--accent); padding: 1rem 1.25rem; border-radius: 8px; margin: 2rem 0; font-size: 15px; }
-.callout strong { color: #633806; }
+/* Layout */
+.layout { display: flex; min-height: 100vh; }
 
-/* Figure 1: Self-Refine */
-.sr-fig { position: relative; height: 360px; max-width: 580px; margin: 0 auto; }
-.sr-node { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.sr-face { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #7F77DD; background: #EEEDFE; }
-.sr-face i { font-size: 42px; color: #3C3489; }
-.sr-name { font-weight: 500; font-size: 13px; }
-.sr-sub { font-size: 11px; color: var(--text-secondary); }
-.sr-card { padding: 10px 14px; background: var(--surface); border: 1px solid #AFA9EC; border-radius: 10px; min-width: 110px; text-align: center; }
-.sr-card .label { font-size: 11px; color: #534AB7; font-weight: 500; }
-.sr-card .value { font-size: 13px; font-weight: 500; margin-top: 2px; }
-.sr-center { left: 50%; top: 50%; transform: translate(-50%, -50%); }
-.sr-out { left: 16px; top: 50%; transform: translateY(-50%); }
-.sr-fb { right: 16px; top: 36px; }
-.sr-ref { right: 16px; bottom: 36px; }
-.sr-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.arr-label { font-size: 11px; fill: var(--text-secondary); font-style: italic; }
+/* Sidebar */
+nav.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 1.5rem 0 2rem;
+}
+.sidebar-logo {
+  padding: 0 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sidebar-logo .dot {
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sidebar-section { margin-bottom: 0.25rem; }
+.sidebar-section-title {
+  padding: 0.3rem 1.25rem;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  font-weight: 600;
+  margin-top: 1rem;
+}
+.sidebar-link {
+  display: block;
+  padding: 0.3rem 1.25rem;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.sidebar-link:hover { color: var(--text); border-left-color: var(--border); }
+.sidebar-link.active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; background: var(--accent-bg); }
 
-/* Figure 2: Reflexion */
-.rx-fig { position: relative; height: 360px; max-width: 600px; margin: 0 auto; }
-.rx-row { position: absolute; left: 0; right: 0; top: 70px; display: flex; justify-content: space-between; padding: 0 10px; }
-.rx-node { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 150px; }
-.rx-face { width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid; }
-.rx-face.actor { background: #E1F5EE; border-color: #1D9E75; }
-.rx-face.actor i { color: #085041; font-size: 38px; }
-.rx-face.eval { background: #FAEEDA; border-color: #BA7517; }
-.rx-face.eval i { color: #633806; font-size: 38px; }
-.rx-face.refl { background: #EEEDFE; border-color: #7F77DD; }
-.rx-face.refl i { color: #3C3489; font-size: 38px; }
-.rx-name { font-weight: 500; font-size: 13px; }
-.rx-sub { font-size: 11px; color: var(--text-secondary); }
-.rx-mem { position: absolute; left: 50%; bottom: 36px; transform: translateX(-50%); width: 180px; }
-.rx-mem-card { padding: 12px; background: var(--surface-secondary); border: 1px dashed var(--border-strong); border-radius: 10px; text-align: center; }
-.rx-mem-card i { font-size: 24px; color: var(--text-secondary); }
-.rx-mem-card .label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
-.rx-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-
-/* Figure 3: MetaGPT */
-.mg-fig { position: relative; max-width: 660px; margin: 0 auto; padding: 2rem 0 1rem; }
-.mg-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; position: relative; z-index: 1; }
-.mg-agent { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 0; }
-.mg-face { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2.5px solid; background: var(--surface); }
-.mg-face i { font-size: 32px; }
-.mg-face.gray { background: #F1EFE8; border-color: #888780; }
-.mg-face.gray i { color: #444441; }
-.mg-face.coral { background: #FAECE7; border-color: #D85A30; }
-.mg-face.coral i { color: #993C1D; }
-.mg-name { font-weight: 500; font-size: 12px; text-align: center; line-height: 1.2; }
-.mg-svg { position: absolute; left: 0; right: 0; top: 2rem; height: 75px; width: 100%; pointer-events: none; }
-.mg-loop-box { position: absolute; right: -10px; top: 1.5rem; width: 210px; height: 130px; border: 2px dashed #D85A30; border-radius: 14px; pointer-events: none; }
-.mg-loop-tag { position: absolute; bottom: -12px; right: 16px; background: var(--surface); padding: 2px 10px; font-size: 11px; font-weight: 500; color: #993C1D; border: 1px solid #D85A30; border-radius: 6px; }
-
-/* Figure 4: Shared pattern */
-.sp-fig { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
-.sp-row { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 14px; padding: 14px; background: var(--surface-secondary); border-radius: 12px; }
-.sp-label { font-size: 13px; font-weight: 500; }
-.sp-label .sub { display: block; font-size: 11px; font-weight: 400; color: var(--text-secondary); margin-top: 2px; }
-.sp-pair { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.sp-mini { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 0 0 auto; }
-.sp-mini-face { width: 44px; height: 44px; border-radius: 50%; border: 2px solid; display: flex; align-items: center; justify-content: center; background: var(--surface); }
-.sp-mini-face i { font-size: 22px; }
-.sp-mini-name { font-size: 11px; font-weight: 500; text-align: center; }
-.solver-c { border-color: #378ADD; }
-.solver-c i { color: #185FA5; }
-.critic-c { border-color: #D4537E; }
-.critic-c i { color: #993556; }
-.sp-arrows { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 8px; min-width: 100px; }
-.sp-arr { display: flex; align-items: center; gap: 4px; font-size: 11px; }
-.sp-arr-line { flex: 1; height: 1.5px; position: relative; }
-.sp-arr.fwd { color: #185FA5; }
-.sp-arr.fwd .sp-arr-line { background: #378ADD; }
-.sp-arr.fwd .sp-arr-line::after { content: ''; position: absolute; right: -1px; top: -4px; border-left: 7px solid #378ADD; border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
-.sp-arr.back { color: #993556; flex-direction: row-reverse; }
-.sp-arr.back .sp-arr-line { background: #D4537E; }
-.sp-arr.back .sp-arr-line::after { content: ''; position: absolute; left: -1px; top: -4px; border-right: 7px solid #D4537E; border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
-.sp-arr-label { white-space: nowrap; font-style: italic; }
-
-/* Figure 5: Review primitive */
-.rp-fig { padding: 1rem 0.5rem; }
-.rp-frame { position: relative; background: var(--surface-secondary); border: 2px dashed #BA7517; border-radius: 20px; padding: 2.25rem 1.5rem 1.5rem; max-width: 560px; margin: 0 auto; }
-.rp-label { position: absolute; top: -13px; left: 24px; background: var(--surface); padding: 2px 12px; font-size: 12px; font-weight: 500; color: #854F0B; border-radius: 6px; border: 1px solid #BA7517; }
-.rp-agents { display: flex; align-items: center; justify-content: space-around; gap: 12px; }
-.rp-agent { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.rp-face { width: 84px; height: 84px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; border: 3px solid; }
-.rp-face.solver { background: #E6F1FB; border-color: #378ADD; }
-.rp-face.solver i { color: #185FA5; font-size: 44px; }
-.rp-face.critic { background: #FBEAF0; border-color: #D4537E; }
-.rp-face.critic i { color: #993556; font-size: 44px; }
-.rp-badge { position: absolute; bottom: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid; display: flex; align-items: center; justify-content: center; }
-.rp-face.solver .rp-badge { border-color: #378ADD; color: #185FA5; }
-.rp-face.critic .rp-badge { border-color: #D4537E; color: #993556; }
-.rp-badge i { font-size: 14px; }
-.rp-name { font-weight: 500; font-size: 15px; }
-.rp-role { font-size: 12px; color: var(--text-secondary); }
-.rp-loop { display: flex; flex-direction: column; gap: 8px; flex: 1; max-width: 200px; }
-.rp-arr { display: flex; align-items: center; gap: 6px; font-size: 12px; }
-.rp-arr-line { flex: 1; height: 2px; position: relative; }
-.rp-arr.fwd { color: #185FA5; }
-.rp-arr.fwd .rp-arr-line { background: #378ADD; }
-.rp-arr.fwd .rp-arr-line::after { content: ''; position: absolute; right: -1px; top: -5px; border-left: 9px solid #378ADD; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
-.rp-arr.back { color: #993556; flex-direction: row-reverse; }
-.rp-arr.back .rp-arr-line { background: #D4537E; }
-.rp-arr.back .rp-arr-line::after { content: ''; position: absolute; left: -1px; top: -5px; border-right: 9px solid #D4537E; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
-.rp-arr-label { white-space: nowrap; font-weight: 500; }
-.rp-io { display: flex; justify-content: space-between; margin-top: 1.5rem; padding: 0 1rem; }
-.rp-pill { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); padding: 6px 14px; background: var(--surface); border-radius: 999px; border: 1px solid var(--border); }
-.rp-pill i { font-size: 16px; }
-
-/* Paper-abstracted figures */
-.paper-title { text-align:center; margin:0 0 4px; }
-.paper-note { text-align:center; font-size:12px; color:var(--text-secondary); margin:0 0 1.5rem; }
-.paper-chip { display:inline-flex; align-items:center; justify-content:center; padding:6px 12px; border:1px solid var(--border-strong); border-radius:999px; background:var(--surface); font-size:12px; font-weight:500; color:var(--text-secondary); }
-.paper-box { background:var(--surface); border:1.5px solid var(--border-strong); border-radius:12px; padding:13px 14px; text-align:center; box-shadow:0 1px 0 rgba(31,31,29,.04); }
-.paper-box .k { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--text-tertiary); margin-bottom:3px; }
-.paper-box .v { font-size:14px; font-weight:500; line-height:1.25; }
-.paper-arrow { position:relative; height:2px; background:var(--border-strong); flex:1; min-width:34px; }
-.paper-arrow::after { content:''; position:absolute; right:-1px; top:-4px; border-left:8px solid var(--border-strong); border-top:5px solid transparent; border-bottom:5px solid transparent; }
-.paper-arrow.back::after { left:-1px; right:auto; border-left:none; border-right:8px solid var(--border-strong); }
-.paper-arrow-label { font-size:11px; color:var(--text-secondary); font-style:italic; white-space:nowrap; }
-.paper-loop { border:1.5px dashed var(--accent); border-radius:18px; background:#FFFCF7; }
-
-/* Self-Refine abstracted from paper-style iterative pipeline */
-.sr-paper { max-width:660px; margin:0 auto; padding:1rem .5rem; }
-.sr-paper-top { display:flex; align-items:center; gap:10px; }
-.sr-paper-stage { flex:1; min-width:0; }
-.sr-paper-stage.gen { border-color:#5F8FCF; background:#F2F7FD; }
-.sr-paper-stage.fb { border-color:#B8842E; background:#FFF7EA; }
-.sr-paper-stage.ref { border-color:#7C74D8; background:#F4F3FE; }
-.sr-paper-loop { margin:1.25rem auto 0; max-width:500px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.sr-paper-loop .mini { font-size:12px; color:var(--text-secondary); text-align:center; }
-.sr-paper-loop .mini strong { display:block; color:var(--text-primary); font-size:13px; }
-.sr-paper-loop .bend { flex:1; height:28px; border-bottom:2px dashed var(--accent); border-left:2px dashed var(--accent); border-right:2px dashed var(--accent); border-radius:0 0 18px 18px; position:relative; }
-.sr-paper-loop .bend::before { content:''; position:absolute; left:-5px; top:-1px; border-right:8px solid var(--accent); border-top:5px solid transparent; border-bottom:5px solid transparent; }
-
-/* Reflexion abstracted from paper figure */
-.rx-paper { max-width:660px; margin:0 auto; padding:1rem .5rem; }
-.rx-paper-grid { display:grid; grid-template-columns:1.1fr .9fr 1.1fr; grid-template-rows:auto auto auto; gap:14px 18px; align-items:center; }
-.rx-paper-box.actor { border-color:#5F8FCF; background:#F2F7FD; }
-.rx-paper-box.env { border-color:#828078; background:#F6F4EF; }
-.rx-paper-box.eval { border-color:#B8842E; background:#FFF7EA; }
-.rx-paper-box.ref { border-color:#7C74D8; background:#F4F3FE; }
-.rx-paper-box.mem { border-style:dashed; border-color:#7C74D8; background:#FAFAFF; }
-.rx-paper-arrow { display:flex; align-items:center; gap:7px; }
-.rx-paper-arrow.vertical { justify-content:center; flex-direction:column; min-height:38px; }
-.rx-paper-arrow.vertical .paper-arrow { width:2px; min-width:2px; height:34px; flex:none; }
-.rx-paper-arrow.vertical .paper-arrow::after { right:-4px; top:auto; bottom:-1px; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--border-strong); border-bottom:none; }
-.rx-paper-arrow.back .paper-arrow { background:#7C74D8; }
-.rx-paper-arrow.back .paper-arrow::after { border-left-color:#7C74D8; }
-
-/* MetaGPT abstracted from SOP figure */
-.mg-paper { max-width:680px; margin:0 auto; padding:1rem .25rem 1.25rem; }
-.mg-paper-lane { display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; align-items:start; position:relative; }
-.mg-paper-role { min-height:98px; padding:11px 8px; }
-.mg-paper-role.pm { border-color:#85837C; background:#F6F4EF; }
-.mg-paper-role.arch { border-color:#85837C; background:#F6F4EF; }
-.mg-paper-role.proj { border-color:#85837C; background:#F6F4EF; }
-.mg-paper-role.eng { border-color:#D36C45; background:#FFF1EC; }
-.mg-paper-role.qa { border-color:#D36C45; background:#FFF1EC; }
-.mg-paper-doc { margin-top:8px; padding:5px 7px; border-radius:6px; background:rgba(255,255,255,.72); border:1px solid rgba(0,0,0,.08); font-size:11px; color:var(--text-secondary); }
-.mg-paper-flow { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px 10% 0; }
-.mg-paper-flow .paper-arrow { width:100%; min-width:0; }
-.mg-paper-review { margin:1rem auto 0; max-width:280px; padding:10px 14px; text-align:center; border:1.5px dashed #D36C45; border-radius:12px; background:#FFF7F3; color:#993C1D; font-size:12px; font-weight:500; }
-
-/* Shared pattern and primitive as abstract diagrams */
-.sp-paper { max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
-.sp-paper-row { display:grid; grid-template-columns:150px 1fr; align-items:center; gap:14px; padding:14px; background:var(--surface-secondary); border-radius:12px; }
-.sp-paper-main { display:grid; grid-template-columns:1fr 1.2fr 1fr; align-items:center; gap:10px; }
-.sp-paper-mid { display:flex; flex-direction:column; gap:8px; }
-.sp-paper-mid .line { display:flex; align-items:center; gap:7px; }
-.sp-paper-mid .line.back { flex-direction:row-reverse; }
-.sp-paper-mid .line.back .paper-arrow { background:#D4537E; }
-.sp-paper-mid .line.back .paper-arrow::after { left:-1px; right:auto; border-left:none; border-right:8px solid #D4537E; }
-.sp-paper-mid .line.fwd .paper-arrow { background:#378ADD; }
-.sp-paper-mid .line.fwd .paper-arrow::after { border-left-color:#378ADD; }
-.sp-paper-solver { border-color:#378ADD; background:#F2F7FD; }
-.sp-paper-critic { border-color:#D4537E; background:#FFF0F5; }
-
-.rp-paper { max-width:600px; margin:0 auto; padding:1rem .5rem; }
-.rp-paper-frame { padding:1.25rem; position:relative; }
-.rp-paper-tag { position:absolute; top:-12px; left:22px; background:var(--surface); border:1px solid var(--accent); border-radius:999px; padding:2px 10px; font-size:12px; color:#854F0B; font-weight:500; }
-.rp-paper-core { display:grid; grid-template-columns:1fr 1.2fr 1fr; gap:12px; align-items:center; }
-.rp-paper-loop { display:flex; flex-direction:column; gap:10px; }
-.rp-paper-io { margin-top:1rem; display:flex; justify-content:space-between; gap:12px; }
-.rp-paper-pill { background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:6px 12px; font-size:12px; color:var(--text-secondary); }
-@media (max-width: 640px) {
-  .sr-paper-top, .rp-paper-core { flex-direction:column; display:flex; }
-  .paper-arrow { min-width:60px; }
-  .rx-paper-grid { grid-template-columns:1fr; }
-  .rx-paper-arrow { justify-content:center; }
-  .mg-paper-lane { grid-template-columns:1fr; }
-  .mg-paper-flow { display:none; }
-  .sp-paper-row { grid-template-columns:1fr; }
-  .sp-paper-main { grid-template-columns:1fr; }
+/* Main content */
+main {
+  flex: 1;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 3rem 3rem 6rem;
+  background: var(--bg);
+  min-height: 100vh;
 }
 
+/* Breadcrumb */
+.breadcrumb {
+  font-size: 13px;
+  color: var(--text-faint);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.breadcrumb a { color: var(--text-muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--accent); }
+.breadcrumb span { color: var(--border); }
+
+/* Page title */
+.page-title { font-size: 32px; font-weight: 700; margin: 0 0 0.5rem; line-height: 1.2; }
+.page-meta { font-size: 13px; color: var(--text-faint); margin: 0 0 2rem; }
+.page-meta a { color: var(--accent); text-decoration: none; }
+
+/* Headings */
+h2 {
+  font-size: 22px; font-weight: 600;
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+}
+h3 { font-size: 17px; font-weight: 600; margin: 2rem 0 0.5rem; color: var(--text); }
+h4 { font-size: 15px; font-weight: 600; margin: 1.5rem 0 0.4rem; color: var(--text); }
+
+p { margin: 0 0 1rem; }
+strong { font-weight: 600; }
+em { font-style: italic; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+ul, ol { margin: 0 0 1rem; padding-left: 1.75rem; }
+li { margin-bottom: 0.4rem; }
+
+/* Inline code */
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 13px;
+  background: #f0f1f3;
+  color: #c0392b;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid #e0e2e6;
+}
+
+/* Code blocks */
+.code-block {
+  position: relative;
+  margin: 1rem 0 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #2a2a3e;
+}
+.code-block-header {
+  background: #2a2a3e;
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #888;
+  font-family: ui-monospace, monospace;
+}
+.code-block-header .lang { color: #7c7faf; }
+.code-block-header .filename { color: #aaa; }
+pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.65;
+}
+pre code { background: transparent; color: inherit; padding: 0; border: none; font-size: inherit; }
+
+/* Syntax highlighting */
+.kw { color: #cba6f7; }   /* keyword */
+.fn { color: #89b4fa; }   /* function/method name */
+.cls { color: #f9e2af; }  /* class name */
+.str { color: #a6e3a1; }  /* string */
+.cmt { color: #6c7086; font-style: italic; }  /* comment */
+.dec { color: #fab387; }  /* decorator */
+.num { color: #fab387; }  /* number */
+.blt { color: #89dceb; }  /* builtin */
+.op { color: #89dceb; }   /* operator */
+.arg { color: #cdd6f4; }  /* argument */
+.attr { color: #89b4fa; }  /* attribute */
+
+/* Callout boxes */
+.callout {
+  padding: 1rem 1.1rem;
+  border-radius: 6px;
+  margin: 1.25rem 0;
+  font-size: 15px;
+  line-height: 1.6;
+  border-left: 4px solid;
+}
+.callout strong { display: block; margin-bottom: 0.3rem; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; }
+.callout.note { background: var(--note-bg); border-color: var(--note-border); }
+.callout.note strong { color: var(--note-border); }
+.callout.warn { background: var(--warn-bg); border-color: var(--warn-border); }
+.callout.warn strong { color: #92620a; }
+.callout.tip { background: var(--tip-bg); border-color: var(--tip-border); }
+.callout.tip strong { color: #166534; }
+
+/* What you'll learn box */
+.learn-box {
+  background: var(--note-bg);
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 0 0 2rem;
+}
+.learn-box h4 { margin: 0 0 0.5rem; font-size: 14px; color: #1d4ed8; text-transform: uppercase; letter-spacing: 0.05em; }
+.learn-box ul { margin: 0; }
+.learn-box li { font-size: 14.5px; color: #1e3a5f; }
+
+/* Section navigation */
+.section-nav {
+  display: flex;
+  gap: 1rem;
+  margin: 3rem 0 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.section-nav a {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.section-nav a:hover { border-color: var(--accent); color: var(--accent); }
+.section-nav a .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); display: block; margin-bottom: 2px; }
+.section-nav .next { text-align: right; }
+
+/* Architecture figure */
+.arch-fig {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+.arch-fig svg { display: block; width: 100%; height: auto; }
+.arch-fig figcaption {
+  padding: 0.5rem 1rem;
+  background: #f8f9fb;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-faint);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Tag pills */
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.tag { background: var(--tag-bg); color: var(--tag-text); border-radius: 4px; padding: 2px 8px; font-size: 12px; font-weight: 500; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 14.5px; }
+th { background: #f4f5f7; text-align: left; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); color: var(--text-muted); font-weight: 600; }
+td { padding: 8px 12px; border: 1px solid var(--border); vertical-align: top; }
+tr:hover td { background: #fafbfc; }
+
+/* Step counter */
+.steps { counter-reset: step; list-style: none; padding-left: 0; }
+.steps li {
+  counter-increment: step;
+  padding-left: 2.5rem;
+  position: relative;
+  margin-bottom: 1rem;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 2px;
+  width: 22px; height: 22px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  nav.sidebar { display: none; }
+  main { padding: 2rem 1.25rem 4rem; }
+  .page-title { font-size: 26px; }
+}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="layout">
 
-<header>
-<h1>How to build your own agent primitives</h1>
-<p class="subtitle">A tutorial on discovering reusable functional components in multi-agent systems, and turning them into building blocks.</p>
-</header>
-
-<h2>The problem with how we build multi-agent systems today</h2>
-
-<p>If you've spent any time building LLM-based multi-agent systems, you've probably noticed a pattern: every new task means a new system. You design a new team of agents, write new role descriptions, wire up new communication protocols. The system you built last week for code review doesn't help much when this week's task is competitive analysis. The work doesn't transfer.</p>
-
-<p>Look across well-known frameworks: MetaGPT, ChatDev, AgentVerse, Multi-Agent Debate, Self-Refine, Reflexion. The same impression holds: each one is a bespoke design for a particular task, with custom roles and custom interaction rules. They work, but they don't compose. You can't take a piece of MetaGPT and snap it into Reflexion. There is no shared vocabulary, no shared building blocks.</p>
-
-<p>This is the problem we want to solve. The right analogy is how we write code: when the same logic shows up in five places, you don't copy-paste it five times. You extract it into a function, and every caller invokes the same function. Multi-agent systems should work the same way. When the same chunk of computation shows up across many systems, it should be <strong>extracted into a reusable function</strong> that any system can call.</p>
-
-<p>We call these extracted functions <strong>primitives</strong>.</p>
-
-<h2>What we noticed</h2>
-
-<p>When we started looking carefully at existing multi-agent systems, something jumped out: even though every framework looked different on the surface, <strong>the same chunks of computation kept reappearing</strong>. Different papers, different domains, different agent names — but underneath, the same function was being implemented over and over.</p>
-
-<p>Look at three influential frameworks from the last few years. They were proposed for completely different problems, and each draws its architecture differently in its paper.</p>
-
-<p><strong>Self-Refine (Madaan et al., 2023)</strong> uses a single LLM that generates an output, then critiques its own output, then refines it, iteratively.</p>
-
-<figure>
-<div class="figure-frame paper-svg-frame">
-<h3 class="paper-title">Self-Refine</h3>
-<p class="paper-note">Paper-style abstraction of iterative generation, feedback, and refinement.</p>
-<img class="paper-svg-img" src="agent_figures_assets/fig1_self_refine.svg" alt="Self-Refine paper-style abstracted diagram">
-</div>
-<figcaption>Fig 1. Self-Refine abstracted as the paper's generate → feedback → refine loop.</figcaption>
-</figure>
-
-<p><strong>Reflexion (Shinn et al., 2023)</strong> uses three models: an Actor that produces actions, an Evaluator that scores them, and a Self-Reflection module that turns the score into verbal feedback stored in memory and fed back to the Actor on the next trial.</p>
-
-<figure>
-<div class="figure-frame paper-svg-frame">
-<h3 class="paper-title">Reflexion</h3>
-<p class="paper-note">Paper-style abstraction of action, evaluation, reflection, and memory.</p>
-<img class="paper-svg-img" src="agent_figures_assets/fig2_reflexion.svg" alt="Reflexion paper-style abstracted diagram">
-</div>
-<figcaption>Fig 2. Reflexion abstracted as actor, evaluator, reflection, and memory.</figcaption>
-</figure>
-
-<p><strong>MetaGPT (Hong et al., 2023)</strong> organizes five role agents (Product Manager, Architect, Project Manager, Engineer, QA Engineer) into a waterfall-style SOP for software development. Inside that pipeline, the Engineer writes code and the QA Engineer evaluates it, with revisions cycling between the two.</p>
-
-<figure>
-<div class="figure-frame paper-svg-frame">
-<h3 class="paper-title">MetaGPT</h3>
-<p class="paper-note">Paper-style abstraction of role-based SOP collaboration with a shared workspace.</p>
-<img class="paper-svg-img" src="agent_figures_assets/fig3_metagpt.svg" alt="MetaGPT paper-style abstracted diagram">
-</div>
-<figcaption>Fig 3. MetaGPT abstracted as a role pipeline over a shared workspace.</figcaption>
-</figure>
-
-<p>Three different papers, three different domains (general reasoning, decision-making with environments, software engineering), three different figures. But if you strip away the domain-specific labels and look at what each system is actually doing, <strong>the same function shows up in all three</strong>: two roles, where one produces a candidate and the other provides feedback, looping until the result is good enough. Every one of these papers re-implemented this function from scratch with their own agent names and wiring.</p>
-
-<figure>
-<div class="figure-frame">
-<h3 class="paper-title">Stripped of labels, all three implement the same function</h3>
-<p class="paper-note">The paper-specific diagrams collapse into the same producer–critic feedback shape.</p>
-<div class="sp-paper">
-  <div class="sp-paper-row">
-    <div class="sp-label">Self-Refine<span class="sub">generate / feedback / refine</span></div>
-    <div class="sp-paper-main">
-      <div class="paper-box sp-paper-solver"><div class="k">Producer</div><div class="v">initial output</div></div>
-      <div class="sp-paper-mid"><div class="line fwd"><span class="paper-arrow-label">candidate</span><div class="paper-arrow"></div></div><div class="line back"><span class="paper-arrow-label">feedback</span><div class="paper-arrow"></div></div></div>
-      <div class="paper-box sp-paper-critic"><div class="k">Critic</div><div class="v">self-feedback</div></div>
-    </div>
+<nav class="sidebar">
+  <div class="sidebar-logo"><span class="dot"></span>Agent Primitives</div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Tutorial</div>
+    <a href="#overview" class="sidebar-link active">Overview</a>
+    <a href="#what-is-a-primitive" class="sidebar-link">What is a primitive?</a>
+    <a href="#observation" class="sidebar-link">The core observation</a>
+    <a href="#review-primitive" class="sidebar-link">Review primitive</a>
+    <a href="#architecture" class="sidebar-link">Architecture</a>
+    <a href="#setup" class="sidebar-link">Setup</a>
+    <a href="#implementation" class="sidebar-link">Full implementation</a>
+    <a href="#walk-through" class="sidebar-link">Walk-through</a>
+    <a href="#running" class="sidebar-link">Running it</a>
+    <a href="#build-your-own" class="sidebar-link">Build your own</a>
+    <a href="#composing" class="sidebar-link">Composing primitives</a>
   </div>
-  <div class="sp-paper-row">
-    <div class="sp-label">Reflexion<span class="sub">actor / evaluator / memory</span></div>
-    <div class="sp-paper-main">
-      <div class="paper-box sp-paper-solver"><div class="k">Producer</div><div class="v">trajectory</div></div>
-      <div class="sp-paper-mid"><div class="line fwd"><span class="paper-arrow-label">attempt</span><div class="paper-arrow"></div></div><div class="line back"><span class="paper-arrow-label">reflection</span><div class="paper-arrow"></div></div></div>
-      <div class="paper-box sp-paper-critic"><div class="k">Critic</div><div class="v">evaluate + reflect</div></div>
-    </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Reference</div>
+    <a href="#design-principles" class="sidebar-link">Design principles</a>
+    <a href="#checklist" class="sidebar-link">Checklist</a>
   </div>
-  <div class="sp-paper-row">
-    <div class="sp-label">MetaGPT<span class="sub">engineer / QA subloop</span></div>
-    <div class="sp-paper-main">
-      <div class="paper-box sp-paper-solver"><div class="k">Producer</div><div class="v">code</div></div>
-      <div class="sp-paper-mid"><div class="line fwd"><span class="paper-arrow-label">artifact</span><div class="paper-arrow"></div></div><div class="line back"><span class="paper-arrow-label">test report</span><div class="paper-arrow"></div></div></div>
-      <div class="paper-box sp-paper-critic"><div class="k">Critic</div><div class="v">QA checks</div></div>
-    </div>
+</nav>
+
+<main>
+  <div class="breadcrumb">
+    <a href="#">Docs</a><span>/</span>
+    <a href="#">Tutorials</a><span>/</span>
+    Building Agent Primitives
   </div>
-</div>
-</div>
-<figcaption>Fig 4. Different papers use different names, but the reusable computation is the same: produce a candidate, receive feedback, and revise.</figcaption>
-</figure>
 
-<p>In Self-Refine, the same LLM plays both roles. In Reflexion, the roles are spread across Actor and (Evaluator + Self-Reflection). In MetaGPT, it's the Engineer–QA subloop inside a bigger pipeline. The names and the surface details differ, but the underlying function is identical.</p>
+  <h1 class="page-title">Building Agent Primitives</h1>
+  <p class="page-meta">Tutorial &mdash; <a href="#">Agent Primitives library</a></p>
 
-<p>This is the core idea. When you see the same function being re-implemented across many systems, you should <strong>extract it once</strong>, give it a clean signature, and let everyone call it. That extracted, reusable function is a <strong>primitive</strong>.</p>
-
-<h2>The Review primitive</h2>
-
-<p>This particular function — "produce a candidate, get feedback, refine" — is what we call the <strong>Review primitive</strong>. It's the first one we extracted, and the most reusable.</p>
-
-<figure>
-<div class="figure-frame">
-<div class="rp-paper">
-  <div class="paper-loop rp-paper-frame">
-    <div class="rp-paper-tag">Review primitive</div>
-    <div class="rp-paper-core">
-      <div class="paper-box sp-paper-solver"><div class="k">Solver</div><div class="v">produce and revise candidate</div></div>
-      <div class="rp-paper-loop">
-        <div class="sp-paper-mid">
-          <div class="line fwd"><span class="paper-arrow-label">candidate</span><div class="paper-arrow"></div></div>
-          <div class="line back"><span class="paper-arrow-label">feedback</span><div class="paper-arrow"></div></div>
-        </div>
-      </div>
-      <div class="paper-box sp-paper-critic"><div class="k">Critic</div><div class="v">evaluate without rewriting</div></div>
-    </div>
-    <div class="rp-paper-io">
-      <div class="rp-paper-pill">external input: task</div>
-      <div class="rp-paper-pill">external output: refined result</div>
-    </div>
+  <div class="tags">
+    <span class="tag">multi-agent systems</span>
+    <span class="tag">KV cache</span>
+    <span class="tag">LLM</span>
+    <span class="tag">intermediate</span>
   </div>
-</div>
-</div>
-<figcaption>Fig 5. The Review primitive as a reusable black-box function: the internal Solver–Critic loop is hidden behind a simple task-in/result-out interface.</figcaption>
-</figure>
 
-<p>From the outside, the Review primitive looks like any other agent: you give it a task, you get back a refined output. The Solver–Critic loop is hidden inside. This is what makes primitives composable: you can drop a Review primitive into a larger system that also uses, say, a Voting primitive, and neither one needs to know anything about the other's internals.</p>
+  <div class="learn-box">
+    <h4>What you will learn</h4>
+    <ul>
+      <li>What a primitive is and why it helps when building multi-agent systems</li>
+      <li>How to recognise a recurring computational pattern across existing MAS papers</li>
+      <li>How the <code>ReviewPrimitive</code> is structured and how it communicates via KV cache</li>
+      <li>How to run the <code>ReviewPrimitive</code> on any task</li>
+      <li>How to design and implement your own primitive</li>
+    </ul>
+  </div>
 
-<p>A primitive is:</p>
-<ul>
-<li>An <strong>extracted, reusable function</strong> implemented as a self-contained multi-agent unit</li>
-<li>That captures <strong>one chunk of computation</strong> that recurs across many systems</li>
-<li>And exposes a <strong>standard interface</strong> (input → output) so it can be called and composed like any other function</li>
-</ul>
+  <!-- SECTION 1 -->
+  <h2 id="what-is-a-primitive">What is a primitive?</h2>
 
-<p>A primitive is not the same as an agent. An agent is one LLM call with one system prompt. A primitive may contain multiple agents working together, possibly in a loop. From the outside, you don't see those internals. You just call it.</p>
+  <p>When people build LLM-based multi-agent systems (MAS), they typically design a bespoke agent team for each new task: custom roles, custom prompts, custom communication protocols. The work doesn't transfer. A code-review pipeline built last week doesn't help when this week's task is competitive analysis.</p>
 
-<blockquote>Think of it like a library function in code. A <code>sort</code> function has a loop and comparisons inside it, but you don't think about those when you call it. You just sort.</blockquote>
+  <p>The right analogy is how we write software. When the same logic appears in five places, you don't copy-paste it five times — you extract it into a function. <strong>A primitive is that extracted function for multi-agent systems.</strong></p>
 
-<h2>Three design principles for a good primitive</h2>
+  <p>Concretely, a primitive is:</p>
+  <ul>
+    <li>A <strong>self-contained multi-agent unit</strong> that implements one recurring computational pattern</li>
+    <li>It communicates internally via <strong>KV cache</strong> rather than text, which avoids repeated decoding and reduces information degradation across stages</li>
+    <li>It exposes the <strong>same external interface as a single LLM agent</strong> — input in, output out — so it can be dropped into any larger system</li>
+  </ul>
 
-<p>When you design a primitive, three properties separate good designs from bad ones.</p>
+  <p>This library defines three primitives: <code>ReviewPrimitive</code>, <code>VotingPrimitive</code>, and <code>PlanExecutePrimitive</code>. An <code>Organizer</code> can select and compose them automatically for a given query.</p>
 
-<h3>1. It implements one function</h3>
+  <!-- SECTION 2 -->
+  <h2 id="observation">The core observation</h2>
 
-<p>A primitive should correspond to one chunk of computation, the same way a well-designed function in code does one thing. Internally, a primitive can have multiple agents and multiple steps — the Review primitive is one primitive even though it contains two agents and a loop, just like a <code>sort()</code> function is one function even though it has loops and comparisons inside. What matters is that the whole thing has one purpose, and that purpose recurs across many systems.</p>
+  <p>The primitives were not designed top-down. They were discovered by looking across existing MAS papers and noticing that the same computational shapes kept reappearing under different labels.</p>
 
-<p>If you find yourself describing a primitive as "it does X <em>and also</em> Y <em>and also</em> Z" where X, Y, and Z are different functions (not different steps inside one function), that's a sign you should split it into separate primitives. "Iterative refinement" is one function. "Refinement, then formatting, then emailing" is three.</p>
+  <table>
+    <tr>
+      <th>Framework</th>
+      <th>Domain</th>
+      <th>What it actually does</th>
+      <th>Underlying pattern</th>
+    </tr>
+    <tr>
+      <td>Self-Refine <em>(Madaan et al., 2023)</em></td>
+      <td>General reasoning</td>
+      <td>Model generates output, then critiques and refines it iteratively</td>
+      <td rowspan="3" style="background:#fff5f3;font-weight:500;color:#c0392b;vertical-align:middle;text-align:center;">Produce → Critique → Revise</td>
+    </tr>
+    <tr>
+      <td>Reflexion <em>(Shinn et al., 2023)</em></td>
+      <td>Decision-making</td>
+      <td>Actor acts, Evaluator scores, Self-Reflection produces verbal feedback for the next trial</td>
+    </tr>
+    <tr>
+      <td>MetaGPT <em>(Hong et al., 2023)</em></td>
+      <td>Software engineering</td>
+      <td>Engineer writes code, QA Engineer tests and reports, Engineer revises</td>
+    </tr>
+  </table>
 
-<h3>2. It is reusable across domains</h3>
+  <p>Strip away the domain labels and the same shape appears in all three: one role produces a candidate, another critiques it, the first revises. This recurring function is the <strong>Review primitive</strong>.</p>
 
-<p>The roles inside a primitive should describe <em>what kind of agent</em> (a critic, a synthesizer, a planner), not <em>what specific content</em> it handles. A "Python debugging primitive" is too narrow. A "produce-and-critique primitive" works for code, marketing copy, legal contracts, anything. Task-specific knowledge goes in the input, not the primitive.</p>
+  <div class="callout note">
+    <strong>Note</strong>
+    A primitive is not defined by its surface appearance (the agent names, the prompts, the domain). It is defined by the <em>computational structure</em>: which agents exist, what they produce, and how their outputs feed into each other. The same structure showing up in ≥ 3 different real systems is the signal that it is worth extracting.
+  </div>
 
-<h3>3. Internal agents have bounded roles</h3>
+  <!-- SECTION 3 -->
+  <h2 id="review-primitive">The Review primitive</h2>
 
-<p>Each agent inside the primitive should be:</p>
-<ul>
-<li><strong>Non-overlapping:</strong> two agents shouldn't be doing the same job</li>
-<li><strong>Constrained:</strong> each agent should have explicit things it must not do (e.g., the Critic must not rewrite the candidate)</li>
-<li><strong>Composable:</strong> the output of one agent should be a natural input for the next</li>
-</ul>
+  <p>The <code>ReviewPrimitive</code> implements iterative refinement through critique. Given a task, a Solver agent produces an initial response. A Critic agent evaluates it and produces feedback — not by decoding text from the Solver, but by reading the Solver's <strong>KV cache directly</strong>. The Solver then refines conditioned on both its own KV cache and the Critic's KV cache, also without any text round-trip.</p>
 
-<h3>When to split a primitive</h3>
+  <figure class="arch-fig">
+    <svg viewBox="0 0 680 210" role="img" aria-label="ReviewPrimitive architecture">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- External interface -->
+      <line x1="30" y1="105" x2="100" y2="105" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="18" y="100" font-size="12" fill="#888" font-family="monospace">task</text>
+      <line x1="580" y1="105" x2="650" y2="105" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="655" y="100" font-size="12" fill="#888" font-family="monospace">output</text>
+      <!-- Outer primitive box -->
+      <rect x="100" y="50" width="480" height="120" rx="10" fill="none" stroke="#ee4c2c" stroke-width="1.5" stroke-dasharray="6 3"/>
+      <text x="118" y="68" font-size="11" fill="#ee4c2c" font-weight="600" font-family="system-ui">ReviewPrimitive</text>
+      <!-- Solver box -->
+      <rect x="130" y="80" width="130" height="50" rx="6" fill="#f0f7ff" stroke="#3b82f6" stroke-width="1"/>
+      <text x="195" y="101" text-anchor="middle" font-size="13" font-weight="600" fill="#1e3a5f" font-family="system-ui">Solver</text>
+      <text x="195" y="118" text-anchor="middle" font-size="11" fill="#3b82f6" font-family="system-ui">_solver_initial_kv()</text>
+      <!-- Critic box -->
+      <rect x="330" y="80" width="130" height="50" rx="6" fill="#fef3f2" stroke="#ef4444" stroke-width="1"/>
+      <text x="395" y="101" text-anchor="middle" font-size="13" font-weight="600" fill="#7f1d1d" font-family="system-ui">Critic</text>
+      <text x="395" y="118" text-anchor="middle" font-size="11" fill="#ef4444" font-family="system-ui">_critic_kv()</text>
+      <!-- Refine box -->
+      <rect x="476" y="80" width="86" height="50" rx="6" fill="#f0fdf4" stroke="#22c55e" stroke-width="1"/>
+      <text x="519" y="101" text-anchor="middle" font-size="13" font-weight="600" fill="#14532d" font-family="system-ui">Solver</text>
+      <text x="519" y="118" text-anchor="middle" font-size="11" fill="#22c55e" font-family="system-ui">_refine()</text>
+      <!-- Arrows between boxes -->
+      <line x1="260" y1="105" x2="330" y2="105" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="295" y="98" text-anchor="middle" font-size="10" fill="#3b82f6" font-family="system-ui">solver KV</text>
+      <line x1="460" y1="105" x2="476" y2="105" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="468" y="98" text-anchor="middle" font-size="10" fill="#ef4444" font-family="system-ui">critic KV</text>
+      <!-- KV note -->
+      <text x="340" y="185" text-anchor="middle" font-size="11" fill="#888" font-family="system-ui">All internal communication is via KV cache — no text decoding between stages</text>
+    </svg>
+    <figcaption>Fig 1. ReviewPrimitive architecture. The Solver, Critic, and Refiner communicate through KV cache, not text.</figcaption>
+  </figure>
 
-<p>If a primitive feels too big, split it. Two clear signs:</p>
-<ul>
-<li><strong>It has two distinct phases with different collaboration structures.</strong> For example, "gather information from multiple sources, then debate the right interpretation" is really two things: a parallel gathering phase and a deliberative phase. Different shapes belong in different primitives.</li>
-<li><strong>Part of it is useful on its own.</strong> If "extract structured data from text" is useful by itself in other contexts, don't bury it inside a larger "research-and-report" primitive. Keep it independent so it can be reused.</li>
-</ul>
+  <p>This KV-cache-based communication has two practical benefits over text-based MAS:</p>
+  <ul>
+    <li><strong>Efficiency.</strong> The Critic reads the Solver's hidden states directly rather than re-encoding a decoded text string. Token usage is roughly 3–4× lower than text-based equivalents.</li>
+    <li><strong>Robustness.</strong> Long-context text communication degrades because LLMs can lose track of instructions buried in a context window. KV cache communication preserves the internal representation without this degradation.</li>
+  </ul>
 
-<h2>How to discover your own primitives</h2>
+  <!-- SECTION 4 -->
+  <h2 id="setup">Setup</h2>
 
-<p>Now the practical part. The Review primitive came from looking at three existing systems and noticing they shared a structure. You can do the same thing in your own domain. Here's the process.</p>
+  <p>Install dependencies:</p>
+  <div class="code-block">
+    <div class="code-block-header"><span class="lang">bash</span></div>
+    <pre><code>pip install torch transformers</code></pre>
+  </div>
 
-<h3>Step 1: Collect 3 to 5 existing multi-agent systems in your domain</h3>
+  <p>Clone the primitives library and import:</p>
+  <div class="code-block">
+    <div class="code-block-header"><span class="lang">python</span></div>
+    <pre><code><span class="kw">from</span> primitives <span class="kw">import</span> ReviewPrimitive
 
-<p>Don't start from abstractions. Start from systems that already work. They can be papers, open-source projects, or pipelines your own team has built. Draw each one out, with its agents and how they communicate.</p>
+primitive <span class="op">=</span> <span class="fn">ReviewPrimitive</span>(
+    model_name<span class="op">=</span><span class="str">"Qwen/Qwen3-8B"</span>,
+    max_solver_tokens<span class="op">=</span><span class="num">30000</span>,
+    max_critic_tokens<span class="op">=</span><span class="num">10000</span>,
+)
 
-<h3>Step 2: Strip away the domain labels</h3>
+result <span class="op">=</span> primitive.<span class="fn">run</span>(<span class="str">"Write a Python function to compute the n-th Fibonacci number."</span>)
+<span class="fn">print</span>(result)</code></pre>
+  </div>
 
-<p>Replace "Engineer," "Reviewer," "Brand Manager," "Lawyer," "Actor" with generic placeholders (Agent A, Agent B). Look at what's left: who produces, who evaluates, who decides, who synthesizes. Look for the <strong>shape of collaboration</strong>, not the names.</p>
+  <div class="callout note">
+    <strong>Requirements</strong>
+    A CUDA GPU is strongly recommended. The primitive loads an LLM and operates on its KV cache. With <code>device_map="auto"</code>, it will use all available GPUs. CPU inference is supported but slow.
+  </div>
 
-<h3>Step 3: Look for repeated functions</h3>
+  <!-- SECTION 5 -->
+  <h2 id="implementation">Full implementation</h2>
+  <p>Here is the complete <code>ReviewPrimitive</code> class. Read through it once — the walk-through below explains every part.</p>
 
-<p>If two or three of your collected systems are implementing the same function under different labels, that's a candidate primitive — exactly the kind of duplication you'd want to extract in code. If a function appears in only one system, it's too specific and not yet ready to become a primitive.</p>
+  <div class="code-block">
+    <div class="code-block-header">
+      <span class="lang">python</span>
+      <span class="filename">primitives/ReviewPrimitive.py</span>
+    </div>
+    <pre><code><span class="kw">import</span> torch
+<span class="kw">from</span> transformers <span class="kw">import</span> AutoModelForCausalLM, AutoTokenizer
+<span class="kw">from</span> transformers.cache_utils <span class="kw">import</span> DynamicCache
+<span class="kw">from</span> typing <span class="kw">import</span> Optional, Tuple, List
 
-<h3>Step 4: Sanity-check generality</h3>
 
-<p>List five or more different tasks where this function would apply. If you can't, the function probably isn't general enough yet to be worth extracting. The Review function, for example, applies to math problem solving, code review, writing refinement, translation quality improvement, brand consistency checking, legal contract refinement, and many more. That breadth is what makes it worth extracting once and reusing everywhere.</p>
+<span class="kw">def</span> <span class="fn">_pkv_to_legacy</span>(past_kv):
+    <span class="kw">if</span> <span class="blt">isinstance</span>(past_kv, DynamicCache):
+        <span class="kw">if</span> <span class="blt">hasattr</span>(past_kv, <span class="str">"to_legacy_cache"</span>):
+            <span class="kw">return</span> past_kv.<span class="fn">to_legacy_cache</span>()
+        <span class="kw">raise</span> <span class="cls">RuntimeError</span>(<span class="str">"DynamicCache incompatible with current transformers."</span>)
+    <span class="kw">if</span> <span class="blt">isinstance</span>(past_kv, (tuple, list)) <span class="kw">and</span> <span class="blt">len</span>(past_kv) <span class="op">&gt;</span> <span class="num">0</span>:
+        <span class="kw">return</span> <span class="blt">list</span>(past_kv)
+    <span class="kw">raise</span> <span class="cls">RuntimeError</span>(<span class="str">f"Unsupported cache type: {type(past_kv)}"</span>)
 
-<h3>Step 5: Define the minimum agent structure</h3>
 
-<p>Strip the pattern down to the fewest agents that still work. For each agent, write down: what is its job, what information does it receive, what does it produce, and what should it explicitly <em>not</em> do?</p>
+<span class="kw">def</span> <span class="fn">_legacy_to_dynamic</span>(legacy_list):
+    <span class="kw">return</span> DynamicCache.<span class="fn">from_legacy_cache</span>(legacy_list)
 
-<p>For Review, the minimum is two agents (Solver and Critic). One agent works in Self-Refine, but research has shown an agent often can't objectively evaluate its own output, so two is more robust. Three or more would be redundant.</p>
 
-<h2>Build a primitive, end to end</h2>
+<span class="dec">@torch.no_grad()</span>
+<span class="kw">def</span> <span class="fn">_forward_step</span>(model, cache, embed):
+    out <span class="op">=</span> <span class="fn">model</span>(
+        inputs_embeds<span class="op">=</span>embed,
+        past_key_values<span class="op">=</span>cache,
+        use_cache<span class="op">=</span><span class="blt">True</span>,
+        return_dict<span class="op">=</span><span class="blt">True</span>,
+    )
+    logits <span class="op">=</span> out.logits[:, <span class="op">-</span><span class="num">1</span>, :]
+    next_id <span class="op">=</span> torch.<span class="fn">argmax</span>(logits, dim<span class="op">=-</span><span class="num">1</span>)
+    next_embed <span class="op">=</span> model.<span class="fn">get_input_embeddings</span>()(next_id).<span class="fn">unsqueeze</span>(<span class="num">1</span>)
+    <span class="kw">return</span> next_id, next_embed, out.past_key_values
 
-<p>Let's actually build the Review primitive in code so you can see how the abstract design maps to running software. The implementation below uses plain text communication between agents (no KV cache or other advanced mechanisms; that level of optimization is orthogonal to the design of the primitive itself).</p>
 
-<h3>Setup</h3>
+<span class="dec">@torch.no_grad()</span>
+<span class="kw">def</span> <span class="fn">_generate_ids</span>(
+    model, tokenizer, cache,
+    first_id: torch.Tensor,
+    max_tokens: int,
+) <span class="op">-&gt;</span> Tuple[List[int], DynamicCache]:
+    eos <span class="op">=</span> tokenizer.eos_token_id
+    device <span class="op">=</span> model.device
 
-<p>You need Python and an LLM API. We'll use the OpenAI API here, but any provider works.</p>
+    generated <span class="op">=</span> [first_id.<span class="fn">item</span>()]
+    <span class="kw">if</span> eos <span class="kw">is not</span> <span class="blt">None</span> <span class="kw">and</span> generated[<span class="op">-</span><span class="num">1</span>] <span class="op">==</span> eos:
+        <span class="kw">return</span> generated, cache
 
-<pre><code>pip install openai
-export OPENAI_API_KEY="your-key-here"</code></pre>
+    cur_embed <span class="op">=</span> model.<span class="fn">get_input_embeddings</span>()(first_id.<span class="fn">to</span>(device)).<span class="fn">unsqueeze</span>(<span class="num">1</span>)
 
-<h3>A minimal Agent class</h3>
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="blt">range</span>(<span class="num">1</span>, max_tokens):
+        next_id, next_embed, cache <span class="op">=</span> <span class="fn">_forward_step</span>(model, cache, cur_embed)
+        tid <span class="op">=</span> next_id.<span class="fn">item</span>()
+        generated.<span class="fn">append</span>(tid)
+        <span class="kw">if</span> eos <span class="kw">is not</span> <span class="blt">None</span> <span class="kw">and</span> tid <span class="op">==</span> eos:
+            <span class="kw">break</span>
+        cur_embed <span class="op">=</span> next_embed
 
-<p>An agent is just a system prompt plus a way to call the LLM:</p>
+    <span class="kw">return</span> generated, cache
 
-<pre><code>from openai import OpenAI
 
-client = OpenAI()
+<span class="kw">class</span> <span class="cls">ReviewPrimitive</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(
+        self,
+        model_name: str <span class="op">=</span> <span class="str">"Qwen/Qwen3-8B"</span>,
+        dtype: torch.dtype <span class="op">=</span> torch.float16,
+        max_solver_tokens: int <span class="op">=</span> <span class="num">30000</span>,
+        max_critic_tokens: int <span class="op">=</span> <span class="num">10000</span>,
+        device: Optional[str] <span class="op">=</span> <span class="blt">None</span>,
+    ):
+        self.device <span class="op">=</span> device <span class="kw">or</span> (<span class="str">"cuda"</span> <span class="kw">if</span> torch.cuda.<span class="fn">is_available</span>() <span class="kw">else</span> <span class="str">"cpu"</span>)
 
-class Agent:
-    def __init__(self, system_prompt, model="gpt-4o-mini"):
-        self.system_prompt = system_prompt
-        self.model = model
-
-    def run(self, user_message):
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": self.system_prompt},
-                {"role": "user", "content": user_message},
-            ],
+        self.tokenizer <span class="op">=</span> AutoTokenizer.<span class="fn">from_pretrained</span>(
+            model_name, trust_remote_code<span class="op">=</span><span class="blt">True</span>
         )
-        return response.choices[0].message.content</code></pre>
+        self.model <span class="op">=</span> AutoModelForCausalLM.<span class="fn">from_pretrained</span>(
+            model_name,
+            torch_dtype<span class="op">=</span>dtype,
+            device_map<span class="op">=</span><span class="str">"auto"</span> <span class="kw">if</span> self.device <span class="op">==</span> <span class="str">"cuda"</span> <span class="kw">else</span> <span class="blt">None</span>,
+            trust_remote_code<span class="op">=</span><span class="blt">True</span>,
+        )
+        <span class="kw">if</span> self.device <span class="op">!=</span> <span class="str">"cuda"</span>:
+            self.model <span class="op">=</span> self.model.<span class="fn">to</span>(self.device)
+        self.model.<span class="fn">eval</span>()
 
-<p>That's it. Agents communicate by passing text to each other.</p>
+        self.max_solver_tokens <span class="op">=</span> max_solver_tokens
+        self.max_critic_tokens <span class="op">=</span> max_critic_tokens
 
-<h3>The Review primitive</h3>
+        self._solver_init_template <span class="op">=</span> [
+            {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: <span class="str">"You are an intelligent programmer. Complete the function provided by the user."</span>}
+        ]
+        self._solver_refine_template <span class="op">=</span> [
+            {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: <span class="str">"You are an intelligent programmer."</span>},
+            {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Refine your previous solution based on the Critic feedback."</span>},
+        ]
+        self._critic_template <span class="op">=</span> [
+            {<span class="str">"role"</span>: <span class="str">"system"</span>, <span class="str">"content"</span>: <span class="str">"You are an intelligent critic. Provide only feedback."</span>}
+        ]
 
-<pre><code>class ReviewPrimitive:
-    """
-    Iterative refinement through critique.
-    Use whenever output quality benefits from a second pair of eyes.
-    """
+    <span class="dec">@torch.no_grad()</span>
+    <span class="kw">def</span> <span class="fn">_solver_initial_kv</span>(self, user_query: str) <span class="op">-&gt;</span> DynamicCache:
+        messages <span class="op">=</span> self._solver_init_template <span class="op">+</span> [
+            {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: user_query}
+        ]
+        prompt <span class="op">=</span> self.tokenizer.<span class="fn">apply_chat_template</span>(
+            messages, tokenize<span class="op">=</span><span class="blt">False</span>, add_generation_prompt<span class="op">=</span><span class="blt">True</span>
+        )
+        inputs <span class="op">=</span> self.tokenizer(prompt, return_tensors<span class="op">=</span><span class="str">"pt"</span>).<span class="fn">to</span>(self.device)
+        out <span class="op">=</span> self.model(<span class="op">**</span>inputs, use_cache<span class="op">=</span><span class="blt">True</span>, return_dict<span class="op">=</span><span class="blt">True</span>)
+        first_id <span class="op">=</span> torch.<span class="fn">argmax</span>(out.logits[:, <span class="op">-</span><span class="num">1</span>, :], dim<span class="op">=-</span><span class="num">1</span>)
+        _, cache <span class="op">=</span> <span class="fn">_generate_ids</span>(
+            self.model, self.tokenizer, out.past_key_values,
+            first_id, self.max_solver_tokens,
+        )
+        <span class="kw">return</span> cache
 
-    SOLVER_PROMPT = """
-    You are a Solver within a Review Primitive.
-    Your role is to produce a solution to the given task, or to revise a prior
-    solution based on critique. Focus on substance and correctness.
-    If you receive a critique, address each point specifically.
-    Output only your solution, with no preamble or meta-commentary.
-    """
+    <span class="dec">@torch.no_grad()</span>
+    <span class="kw">def</span> <span class="fn">_critic_kv</span>(self, solver_cache: DynamicCache) <span class="op">-&gt;</span> DynamicCache:
+        prompt <span class="op">=</span> self.tokenizer.<span class="fn">apply_chat_template</span>(
+            self._critic_template, tokenize<span class="op">=</span><span class="blt">False</span>, add_generation_prompt<span class="op">=</span><span class="blt">True</span>
+        )
+        inputs <span class="op">=</span> self.tokenizer(prompt, return_tensors<span class="op">=</span><span class="str">"pt"</span>).<span class="fn">to</span>(self.device)
+        out <span class="op">=</span> self.model(<span class="op">**</span>inputs, use_cache<span class="op">=</span><span class="blt">True</span>, return_dict<span class="op">=</span><span class="blt">True</span>)
 
-    CRITIC_PROMPT = """
-    You are a Critic within a Review Primitive.
-    Your role is to evaluate a candidate solution and identify specific, actionable
-    issues: factual errors, missing requirements, unclear reasoning, weak claims.
-    Do not rewrite the solution yourself.
-    Provide structured feedback as a numbered list of issues.
-    If the solution has no significant issues, respond with exactly: "NO ISSUES".
-    """
+        <span class="cmt"># Concatenate solver KV cache with critic's own KV cache</span>
+        solver_legacy <span class="op">=</span> <span class="fn">_pkv_to_legacy</span>(solver_cache)
+        critic_legacy <span class="op">=</span> <span class="fn">_pkv_to_legacy</span>(out.past_key_values)
+        merged <span class="op">=</span> [
+            (torch.<span class="fn">cat</span>([k1, k2], dim<span class="op">=</span><span class="num">2</span>), torch.<span class="fn">cat</span>([v1, v2], dim<span class="op">=</span><span class="num">2</span>))
+            <span class="kw">for</span> (k1, v1), (k2, v2) <span class="kw">in</span> <span class="blt">zip</span>(solver_legacy, critic_legacy)
+        ]
+        merged_cache <span class="op">=</span> <span class="fn">_legacy_to_dynamic</span>(merged)
+        first_id <span class="op">=</span> torch.<span class="fn">argmax</span>(out.logits[:, <span class="op">-</span><span class="num">1</span>, :], dim<span class="op">=-</span><span class="num">1</span>)
+        _, final_cache <span class="op">=</span> <span class="fn">_generate_ids</span>(
+            self.model, self.tokenizer, merged_cache,
+            first_id, self.max_critic_tokens,
+        )
+        <span class="kw">return</span> final_cache
 
-    def __init__(self, max_iterations=2):
-        self.solver = Agent(system_prompt=self.SOLVER_PROMPT)
-        self.critic = Agent(system_prompt=self.CRITIC_PROMPT)
-        self.max_iterations = max_iterations
+    <span class="dec">@torch.no_grad()</span>
+    <span class="kw">def</span> <span class="fn">_solver_refine_text</span>(
+        self,
+        solver_cache: DynamicCache,
+        critic_cache: DynamicCache,
+    ) <span class="op">-&gt;</span> str:
+        prompt <span class="op">=</span> self.tokenizer.<span class="fn">apply_chat_template</span>(
+            self._solver_refine_template,
+            tokenize<span class="op">=</span><span class="blt">False</span>, add_generation_prompt<span class="op">=</span><span class="blt">True</span>,
+        )
+        inputs <span class="op">=</span> self.tokenizer(prompt, return_tensors<span class="op">=</span><span class="str">"pt"</span>).<span class="fn">to</span>(self.device)
+        out <span class="op">=</span> self.model(<span class="op">**</span>inputs, use_cache<span class="op">=</span><span class="blt">True</span>, return_dict<span class="op">=</span><span class="blt">True</span>)
 
-    def run(self, task):
-        solution = self.solver.run(f"Task:\n{task}")
+        <span class="cmt"># Merge all three KV caches: original solver + critic + refiner prompt</span>
+        hist <span class="op">=</span> <span class="fn">_pkv_to_legacy</span>(solver_cache)
+        crit <span class="op">=</span> <span class="fn">_pkv_to_legacy</span>(critic_cache)
+        ref  <span class="op">=</span> <span class="fn">_pkv_to_legacy</span>(out.past_key_values)
+        merged <span class="op">=</span> [
+            (torch.<span class="fn">cat</span>([k0, k1, k2], dim<span class="op">=</span><span class="num">2</span>), torch.<span class="fn">cat</span>([v0, v1, v2], dim<span class="op">=</span><span class="num">2</span>))
+            <span class="kw">for</span> (k0, v0), (k1, v1), (k2, v2) <span class="kw">in</span> <span class="blt">zip</span>(hist, crit, ref)
+        ]
+        merged_cache <span class="op">=</span> <span class="fn">_legacy_to_dynamic</span>(merged)
+        first_id <span class="op">=</span> torch.<span class="fn">argmax</span>(out.logits[:, <span class="op">-</span><span class="num">1</span>, :], dim<span class="op">=-</span><span class="num">1</span>)
+        gen_ids, _ <span class="op">=</span> <span class="fn">_generate_ids</span>(
+            self.model, self.tokenizer, merged_cache,
+            first_id, self.max_solver_tokens,
+        )
+        <span class="kw">return</span> self.tokenizer.<span class="fn">decode</span>(gen_ids, skip_special_tokens<span class="op">=</span><span class="blt">True</span>)
 
-        for _ in range(self.max_iterations):
-            critique = self.critic.run(
-                f"Task:\n{task}\n\nCandidate solution:\n{solution}"
-            )
+    <span class="kw">def</span> <span class="fn">run</span>(self, user_query: str) <span class="op">-&gt;</span> str:
+        solver_cache  <span class="op">=</span> self.<span class="fn">_solver_initial_kv</span>(user_query)
+        critic_cache  <span class="op">=</span> self.<span class="fn">_critic_kv</span>(solver_cache)
+        <span class="kw">return</span> self.<span class="fn">_solver_refine_text</span>(solver_cache, critic_cache)</code></pre>
+  </div>
 
-            if "NO ISSUES" in critique:
-                break
+  <!-- SECTION 6 -->
+  <h2 id="walk-through">Walk-through</h2>
 
-            solution = self.solver.run(
-                f"Task:\n{task}\n\n"
-                f"Prior solution:\n{solution}\n\n"
-                f"Critique to address:\n{critique}"
-            )
+  <h3>Helper functions</h3>
+  <p>Three module-level helpers handle KV cache bookkeeping and autoregressive generation. They are shared across all primitives in the library.</p>
 
-        return solution</code></pre>
+  <h4><code>_pkv_to_legacy</code> and <code>_legacy_to_dynamic</code></h4>
+  <p>Newer versions of <code>transformers</code> return a <code>DynamicCache</code> object instead of a plain list of <code>(key, value)</code> tuples. These two helpers normalise between the two representations so the rest of the code can always work with a flat list of per-layer tuples when concatenating, and convert back to <code>DynamicCache</code> before passing back into the model.</p>
 
-<p>A few things worth noticing:</p>
-<ul>
-<li><strong>System prompts define roles, not strategies.</strong> We tell each agent what it is, not how to reason. The LLM handles the reasoning.</li>
-<li><strong>Each agent has explicit "must not" constraints.</strong> The Critic must not rewrite. The Solver outputs only the solution. These constraints prevent role drift.</li>
-<li><strong>The primitive exposes a clean external interface.</strong> You give it a task, you get back a refined solution. The internal loop is hidden.</li>
-</ul>
+  <h4><code>_forward_step</code></h4>
+  <p>A single autoregressive decoding step. It takes the model, the current KV cache, and the embedding of the last predicted token; runs one forward pass; and returns the next token id, its embedding, and the updated cache. It operates on embeddings rather than token ids so that callers can inject any representation into the forward pass.</p>
 
-<h3>Try it</h3>
+  <h4><code>_generate_ids</code></h4>
+  <p>Runs <code>_forward_step</code> in a loop to generate a sequence of token ids up to <code>max_tokens</code>. It stops early at <code>eos</code>. It returns both the generated ids and the final KV cache, which is what the next stage of the primitive reads.</p>
 
-<pre><code>review = ReviewPrimitive(max_iterations=2)
-result = review.run("Write a 3-sentence product description for a noise-canceling water bottle.")
-print(result)</code></pre>
+  <div class="callout note">
+    <strong>Why return the KV cache from generation?</strong>
+    The KV cache accumulated during generation encodes the full context the model has seen: the prompt plus every token the model generated. Returning it allows the next stage (e.g. the Critic) to read that full context without re-encoding the decoded text from scratch.
+  </div>
 
-<h3>Test generality</h3>
+  <h3>The <code>ReviewPrimitive</code> class</h3>
 
-<p>This is the most important step. Run the same primitive on tasks from completely different domains:</p>
+  <h4>Constructor</h4>
+  <p>The constructor loads the model and tokenizer, sets generation budgets, and defines three fixed message templates:</p>
+  <ul>
+    <li><code>_solver_init_template</code> — the Solver's initial system prompt. Currently specialised for code generation; you can customise this for your domain.</li>
+    <li><code>_critic_template</code> — the Critic's system prompt. It receives no user message; it reads the Solver's response entirely from the KV cache.</li>
+    <li><code>_solver_refine_template</code> — the Solver's refinement system prompt and a fixed instruction to revise based on the Critic's feedback.</li>
+  </ul>
 
-<pre><code>tasks = [
-    "Write a 3-sentence product description for a noise-canceling water bottle.",
-    "Explain recursion to a 10-year-old in under 100 words.",
-    "Draft an apology email to a customer whose package was delayed by 2 weeks.",
-    "Write a Python function that returns the n-th Fibonacci number.",
-]
+  <div class="callout tip">
+    <strong>Customising for your domain</strong>
+    To adapt the <code>ReviewPrimitive</code> to a non-coding domain, change the system prompts in <code>__init__</code>. The KV cache mechanism and the three-stage pipeline stay exactly the same. You are only changing what roles the agents play, not the structure.
+  </div>
 
-for t in tasks:
-    print("---")
-    print(t)
-    print(review.run(t))</code></pre>
+  <h4><code>_solver_initial_kv(user_query)</code></h4>
+  <p>Runs the Solver on the user query. It applies the chat template, runs a full forward pass to get the first logit, then calls <code>_generate_ids</code> to generate the response. The returned object is the KV cache at the end of generation — a compact representation of everything the Solver produced.</p>
 
-<p>If the primitive works on all four without modification, the design is general. If it only works for one, the prompts are too task-specific. Revise them.</p>
+  <h4><code>_critic_kv(solver_cache)</code></h4>
+  <p>This is the key communication step. The Critic has its own system prompt, but its user context is not a decoded text string — it is the <em>Solver's KV cache</em>, concatenated onto the Critic's own KV states layer by layer:</p>
 
-<h2>From primitives to systems</h2>
+  <div class="code-block">
+    <div class="code-block-header"><span class="lang">python</span><span class="filename">the KV concatenation</span></div>
+    <pre><code>merged <span class="op">=</span> [
+    (torch.<span class="fn">cat</span>([k1, k2], dim<span class="op">=</span><span class="num">2</span>), torch.<span class="fn">cat</span>([v1, v2], dim<span class="op">=</span><span class="num">2</span>))
+    <span class="kw">for</span> (k1, v1), (k2, v2) <span class="kw">in</span> <span class="blt">zip</span>(solver_legacy, critic_legacy)
+]</code></pre>
+  </div>
 
-<p>Once you have a few well-designed primitives, complex tasks are handled by <strong>composing</strong> them rather than building larger primitives. A research workflow might compose an Extraction primitive (to pull facts from sources), a Synthesis primitive (to combine them), and a Review primitive (to check the result). Each primitive stays simple. The complexity lives in the composition.</p>
+  <p>Concatenating along <code>dim=2</code> (the sequence dimension) means the Critic attends over both the Solver's full generation context and its own prompt context simultaneously, as if they were one contiguous sequence. The Critic then generates its feedback into its own KV cache, which is what <code>_critic_kv</code> returns.</p>
 
-<p>This is the foundation for the future we want to build toward: a small library of reusable primitives, combined in different ways for different problems, rather than custom agent teams built from scratch for every task.</p>
+  <div class="callout warn">
+    <strong>Same model required</strong>
+    KV cache concatenation only works when both agents share the same model architecture and weights. The assumption is that the key and value projections are compatible. The <code>ReviewPrimitive</code> uses a single loaded model for all stages, which satisfies this constraint.
+  </div>
 
-<div class="checklist">
-<h3>Checklist before submitting a primitive</h3>
-<ul>
-<li>Implements one function with a single clear purpose</li>
-<li>The same function appears in at least 2–3 existing systems</li>
-<li>Roles defined by <em>what kind of agent</em>, not what specific content</li>
-<li>Each agent has non-overlapping, bounded roles with explicit "must not" constraints</li>
-<li>Tested on at least 3 inputs from different domains</li>
-<li>One-sentence description of when to use it, for the shared library</li>
-</ul>
-</div>
+  <h4><code>_solver_refine_text(solver_cache, critic_cache)</code></h4>
+  <p>The final stage. The Solver re-reads both its own original KV cache and the Critic's KV cache, along with a short refinement prompt, all merged together:</p>
 
-<p style="margin-top:2rem;color:var(--text-secondary);font-size:14px;text-align:center;">Build one, ship it, and the next person to tackle a similar problem will thank you.</p>
+  <div class="code-block">
+    <div class="code-block-header"><span class="lang">python</span><span class="filename">three-way KV merge</span></div>
+    <pre><code>merged <span class="op">=</span> [
+    (torch.<span class="fn">cat</span>([k0, k1, k2], dim<span class="op">=</span><span class="num">2</span>), torch.<span class="fn">cat</span>([v0, v1, v2], dim<span class="op">=</span><span class="num">2</span>))
+    <span class="kw">for</span> (k0, v0), (k1, v1), (k2, v2) <span class="kw">in</span> <span class="blt">zip</span>(hist, crit, ref)
+]</code></pre>
+  </div>
 
+  <p>The Solver generates the final refined output from this merged context. This output is decoded to text and returned as the primitive's result.</p>
+
+  <h4><code>run(user_query)</code></h4>
+  <p>The public interface. It orchestrates the three stages in sequence:</p>
+  <div class="code-block">
+    <div class="code-block-header"><span class="lang">python</span></div>
+    <pre><code><span class="kw">def</span> <span class="fn">run</span>(self, user_query: str) <span class="op">-&gt;</span> str:
+    solver_cache  <span class="op">=</span> self.<span class="fn">_solver_initial_kv</span>(user_query)   <span class="cmt"># Stage 1: solve</span>
+    critic_cache  <span class="op">=</span> self.<span class="fn">_critic_kv</span>(solver_cache)          <span class="cmt"># Stage 2: critique</span>
+    <span class="kw">return</span> self.<span class="fn">_solver_refine_text</span>(solver_cache, critic_cache) <span class="cmt"># Stage 3: refine</span></code></pre>
+  </div>
+
+  <!-- SECTION 7 -->
+  <h2 id="running">Running it</h2>
+
+  <h3>Basic usage</h3>
+  <div class="code-block">
+    <div class="code-block-header"><span class="lang">python</span></div>
+    <pre><code><span class="kw">from</span> primitives <span class="kw">import</span> ReviewPrimitive
+
+primitive <span class="op">=</span> <span class="fn">ReviewPrimitive</span>(model_name<span class="op">=</span><span class="str">"Qwen/Qwen3-8B"</span>)
+
+result <span class="op">=</span> primitive.<span class="fn">run</span>(
+    <span class="str">"Write a Python function that checks if a binary tree is balanced."</span>
+)
+<span class="fn">print</span>(result)</code></pre>
+  </div>
+
+  <h3>Changing the model</h3>
+  <p>Any model compatible with <code>AutoModelForCausalLM</code> and <code>transformers</code> KV cache works. Larger models generally benefit more from the Critic stage.</p>
+  <div class="code-block">
+    <div class="code-block-header"><span class="lang">python</span></div>
+    <pre><code>primitive <span class="op">=</span> <span class="fn">ReviewPrimitive</span>(
+    model_name<span class="op">=</span><span class="str">"deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"</span>,
+    dtype<span class="op">=</span>torch.bfloat16,
+    max_solver_tokens<span class="op">=</span><span class="num">30000</span>,
+    max_critic_tokens<span class="op">=</span><span class="num">10000</span>,
+)</code></pre>
+  </div>
+
+  <h3>Adjusting generation budgets</h3>
+  <p><code>max_solver_tokens</code> controls how long the Solver's initial answer and refinement can be. <code>max_critic_tokens</code> controls how long the Critic's feedback can be. For math benchmarks you may want a large <code>max_solver_tokens</code>; for quick quality checks you can reduce both.</p>
+
+  <!-- SECTION 8 -->
+  <h2 id="build-your-own">Build your own primitive</h2>
+
+  <p>The <code>ReviewPrimitive</code> is one extracted function. You can define others for different recurring computational patterns. Here is the process.</p>
+
+  <ol class="steps">
+    <li>
+      <strong>Collect 3–5 existing MAS designs in your domain.</strong> They can be papers, open-source projects, or pipelines you have built. Draw each one out, with its agents and how they communicate.
+    </li>
+    <li>
+      <strong>Strip away domain labels.</strong> Replace "Engineer," "Actor," "Brand Manager" with generic placeholders (Agent A, Agent B). Look at what's left: who produces, who evaluates, who synthesises, who selects.
+    </li>
+    <li>
+      <strong>Find the repeated function.</strong> If two or three of your designs implement the same shape under different labels, you have a candidate primitive. A pattern recurring in fewer than 3 real systems is probably not general enough yet.
+    </li>
+    <li>
+      <strong>Define the minimum agent structure.</strong> For each agent, write down: what is its job, what does it receive, what does it produce, and what must it <em>not</em> do.
+    </li>
+    <li>
+      <strong>Implement the three-method structure.</strong> Each primitive should expose <code>run(query) -> str</code> and implement internal communication via KV cache following the same concatenation pattern as <code>ReviewPrimitive</code>.
+    </li>
+  </ol>
+
+  <div class="callout tip">
+    <strong>Skeleton for a new primitive</strong>
+    The minimum structure is: a constructor that loads the model and defines system prompt templates; one method per internal stage that builds or merges KV caches; and a <code>run()</code> method that calls the stages in order.
+  </div>
+
+  <!-- SECTION 9 -->
+  <h2 id="composing">Composing primitives</h2>
+
+  <p>Individual primitives can be composed into larger systems. The <code>Organizer</code> does this automatically: given a query, it selects which primitives to use and in what order, optionally guided by a Knowledge Pool of previously effective configurations.</p>
+
+  <div class="code-block">
+    <div class="code-block-header"><span class="lang">python</span></div>
+    <pre><code><span class="kw">from</span> primitives <span class="kw">import</span> Organizer
+
+org <span class="op">=</span> <span class="fn">Organizer</span>(config<span class="op">=</span>{
+    <span class="str">"model_name"</span>: <span class="str">"Qwen/Qwen3-8B"</span>,
+    <span class="str">"num_executors"</span>: <span class="num">3</span>,
+})
+
+<span class="cmt"># Returns the composed system's final output</span>
+result <span class="op">=</span> org.<span class="fn">solve</span>(<span class="str">"Write a binary search implementation in Python."</span>)
+<span class="fn">print</span>(result)
+
+<span class="cmt"># Inspect the plan without running it</span>
+plan <span class="op">=</span> org.<span class="fn">plan_only</span>(<span class="str">"Write a binary search implementation in Python."</span>)
+<span class="fn">print</span>(plan)</code></pre>
+  </div>
+
+  <p>The Organizer's <code>plan_only()</code> returns a JSON plan describing which primitives to use and in which order. The <code>solve()</code> method executes the plan. The three available primitive types are <code>"review"</code>, <code>"vote"</code>, and <code>"plan_execute"</code>.</p>
+
+  <!-- SECTION 12 -->
+  <h2 id="design-principles">Design principles</h2>
+
+  <p>When adding a new primitive to the library, keep these three properties in mind:</p>
+
+  <table>
+    <tr><th>Property</th><th>What it means</th><th>Test</th></tr>
+    <tr>
+      <td><strong>One function</strong></td>
+      <td>The primitive implements one recurring computational unit. Internal complexity (loops, multiple stages) is allowed; multiple distinct purposes is not.</td>
+      <td>Can you find the same structure in ≥ 3 real MAS designs?</td>
+    </tr>
+    <tr>
+      <td><strong>Domain-agnostic roles</strong></td>
+      <td>Agent roles describe what kind of agent it is (Solver, Critic, Planner) not what content it handles. Task knowledge lives in the input.</td>
+      <td>Does the primitive work on tasks from three unrelated domains without code changes?</td>
+    </tr>
+    <tr>
+      <td><strong>Bounded internal agents</strong></td>
+      <td>Each internal agent has a non-overlapping, constrained role. The Critic must not produce the final answer. The Planner must not execute.</td>
+      <td>Can you write one sentence describing each agent's job and one sentence describing what it must not do?</td>
+    </tr>
+  </table>
+
+  <!-- SECTION 13 -->
+  <h2 id="checklist">Checklist</h2>
+  <p>Before submitting a new primitive to the shared library:</p>
+  <ul>
+    <li>The same computational structure appears in at least 3 existing MAS designs</li>
+    <li>The primitive implements one function with a single clear purpose</li>
+    <li>All internal communication uses KV cache concatenation, not text decoding</li>
+    <li>Agent roles are defined by function (Solver, Critic, Planner) not by content domain</li>
+    <li>Each agent has an explicit constraint on what it must not do</li>
+    <li>The <code>run()</code> method accepts a string and returns a string</li>
+    <li>Tested on at least 3 tasks from different domains</li>
+    <li>One-sentence description added to <code>__init__.py</code> <code>__all__</code> docstring</li>
+  </ul>
+
+
+</main>
 </div>
 </body>
 </html>
